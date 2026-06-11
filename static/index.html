@@ -1494,7 +1494,7 @@
             <iframe id="frame-klein" data-src="/static/klein.html?v=2026.06.10.1.1781140461" scrolling="yes"></iframe>
             <iframe id="frame-angle" data-src="/static/angle.html?v=2026.06.10.1.1781140461" scrolling="yes"></iframe>
             <iframe id="frame-gpt-chat" data-src="/static/gpt-chat.html?v=2026.06.10.1.1781140461" scrolling="yes"></iframe>
-            <iframe id="frame-canvas" data-src="/static/canvas.html?v=2026.06.10.1.1781168425" scrolling="yes"></iframe>
+            <iframe id="frame-canvas" data-src="/static/canvas.html?v=2026.06.12.014754" scrolling="yes"></iframe>
             <iframe id="frame-asset-manager" data-src="/static/asset-manager.html?v=2026.06.10.1.1781172686" scrolling="yes"></iframe>
             <iframe id="frame-api-settings" data-src="/static/api-settings.html?v=2026.06.10.1.1781168425" scrolling="yes"></iframe>
             <div class="nano-monitor" id="nano-monitor">
@@ -1612,6 +1612,7 @@
         const CID = localStorage.getItem("client_id") || generateUUID();
         localStorage.setItem("client_id", CID);
         const ACTIVE_PAGE_KEY = 'studio_active_page';
+        const LAST_NON_SETTINGS_PAGE_KEY = 'studio_last_non_settings_page';
         const LOCAL_NAV_COLLAPSED_KEY = 'studio_local_nav_collapsed';
         const SIDEBAR_SETTINGS_COLLAPSED_KEY = 'studio_sidebar_settings_collapsed';
         const SIDEBAR_PINNED_KEY = 'studio_sidebar_pinned';
@@ -1708,6 +1709,13 @@
         function switchUI(el, id, options = {}) {
             resetStudioRootScroll();
             if(!PAGE_IDS.includes(id)) id = DEFAULT_PAGE_ID;
+            const activeFrame = document.querySelector('iframe.active');
+            const activeId = activeFrame?.id?.replace(/^frame-/, '');
+            if(id === 'api-settings' && activeId && activeId !== 'api-settings') {
+                localStorage.setItem(LAST_NON_SETTINGS_PAGE_KEY, activeId);
+            } else if(id !== 'api-settings') {
+                localStorage.setItem(LAST_NON_SETTINGS_PAGE_KEY, id);
+            }
             document.querySelectorAll('.nav-item,.side-pill').forEach(n => n.classList.remove('active'));
             if(el) el.classList.add('active');
             document.querySelectorAll('iframe').forEach(f => f.classList.remove('active'));
@@ -1730,6 +1738,13 @@
             resetStudioRootScroll();
         }
 
+        function closeApiSettingsPage() {
+            const saved = localStorage.getItem(LAST_NON_SETTINGS_PAGE_KEY);
+            const id = PAGE_IDS.includes(saved) && saved !== 'api-settings' ? saved : DEFAULT_PAGE_ID;
+            const trigger = document.querySelector(`[onclick*="'${id}'"],[onclick*='"${id}"']`);
+            switchUI(trigger, id);
+        }
+
         function forwardStudioApiChange(data) {
             if(!data || !['providers-changed','workflows-changed','comfy-instances-changed'].includes(data.type)) return;
             document.querySelectorAll('iframe').forEach(iframe => {
@@ -1741,6 +1756,10 @@
 
         window.addEventListener('message', event => {
             if (event.origin && event.origin !== location.origin) return;
+            if(event.data?.type === 'api-settings-close') {
+                closeApiSettingsPage();
+                return;
+            }
             forwardStudioApiChange(event.data);
         });
 

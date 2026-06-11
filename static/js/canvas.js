@@ -115,9 +115,6 @@ const canvasGate = document.getElementById('canvasGate');
 const board = document.getElementById('board');
 const world = document.getElementById('world');
 const nodesEl = document.getElementById('nodes');
-const minimap = document.getElementById('minimap');
-const minimapContent = document.getElementById('minimapContent');
-let minimapViewport = document.getElementById('minimapViewport');
 const linksEl = document.getElementById('links');
 const linkControlsEl = document.getElementById('linkControls');
 const dropOverlay = document.getElementById('dropOverlay');
@@ -208,9 +205,6 @@ let connections = [];
 let viewport = {x: -1800, y: -1000, scale: 1};
 let dragNode = null;
 let dragBoard = null;
-let minimapDrag = false;
-let minimapState = null;
-let minimapRenderQueued = false;
 let zoomPreviewState = null;
 let resizeNode = null;
 let llmPaneDrag = null;
@@ -370,7 +364,6 @@ const CUSTOM_IMAGE_MODELS_KEY = 'canvas_custom_image_models';
 const MANAGED_IMAGE_MODELS_KEY = 'canvas_image_models_ordered';
 const MANAGED_CHAT_MODELS_KEY = 'canvas_chat_models_ordered';
 const CANVAS_THEME_KEY = 'canvas_theme';
-const QUICK_TOOLBAR_COLLAPSED_KEY = 'canvas_quick_toolbar_collapsed';
 const CANVAS_SESSION_VIEWPORTS_KEY = 'canvas_session_viewports_v1';
 let canvasSessionViewportFallback = {};
 const DEFAULT_VIDEO_MODELS = [
@@ -434,24 +427,6 @@ function applyTheme(theme){
     document.body.classList.toggle('studio-theme-dark', dark);
     document.body.classList.toggle('theme-dark', dark);
     shell.classList.toggle('theme-dark', dark);
-}
-function applyQuickToolbarState(){
-    const toolbar = document.getElementById('quickToolbar');
-    if(!toolbar) return;
-    const collapsed = localStorage.getItem(QUICK_TOOLBAR_COLLAPSED_KEY) === '1';
-    toolbar.classList.toggle('collapsed', collapsed);
-    const btn = toolbar.querySelector('.toolbar-toggle');
-    if(btn){
-        btn.title = collapsed ? '展开快捷菜单' : '折叠快捷菜单';
-        btn.setAttribute('aria-label', btn.title);
-    }
-    refreshIcons();
-}
-function toggleQuickToolbar(){
-    const toolbar = document.getElementById('quickToolbar');
-    const next = !toolbar?.classList.contains('collapsed');
-    localStorage.setItem(QUICK_TOOLBAR_COLLAPSED_KEY, next ? '1' : '0');
-    applyQuickToolbarState();
 }
 function loadLocalModelLists(){
     try {
@@ -922,7 +897,6 @@ function screenToWorld(clientX, clientY){
 }
 function applyViewport(){
     world.style.transform = `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.scale})`;
-    scheduleMinimapRender();
 }
 function estimatedNodeRect(n){
     const el = nodesEl?.querySelector?.(`.node[data-id="${CSS.escape(n.id)}"]`);
@@ -931,73 +905,117 @@ function estimatedNodeRect(n){
     const h = el?.offsetHeight || n.h || size.h || 160;
     return {x:n.x || 0, y:n.y || 0, w, h};
 }
-function currentWorldViewRect(){
-    const rect = board.getBoundingClientRect();
-    const scale = viewport.scale || 1;
-    return {
-        x:-viewport.x / scale,
-        y:-viewport.y / scale,
-        w:rect.width / scale,
-        h:rect.height / scale
+function autoArrangeCanvasNodes(){
+    if(!canvas) return;
+    if(!nodes.length){
+        setStatus(tr('canvas.autoArrangeEmpty') || '当前画布没有可对齐排序的节点');
+        return;
+    }
+    const nodeMap = new Map(nodes.map(n => [n.id, n]));
+    const rectMap = new Map(nodes.map(n => [n.id, estimatedNodeRect(n)]));
+    const adjacency = new Map(nodes.map(n => [n.id, new Set()]));
+    (connections || []).forEach(c => {
+        if(!nodeMap.has(c.from) || !nodeMap.has(c.to)) return;
+        adjacency.get(c.from)?.add(c.to);
+        adjacency.get(c.to)?.add(c.from);
+    });
+
+    const groups = [];
+    const visited = new Set();
+    nodes.forEach(node => {
+        if(visited.has(node.id)) return;
+        const stack = [node.id];
+        const ids = [];
+        while(stack.length){
+            const id = stack.pop();
+            if(!id || visited.has(id)) continue;
+            visited.add(id);
+            ids.push(id);
+            (adjacency.get(id) || []).forEach(next => {
+                if(!visited.has(next)) stack.push(next);
+            });
+        }
+        const rects = ids.map(id => rectMap.get(id)).filter(Boolean);
+        groups.push({
+            ids,
+            x: Math.min(...rects.map(r => r.x)),
+            y: Math.min(...rects.map(r => r.y))
+        });
+    });
+
+    const compareNodeIds = (a, b) => {
+        const ar = rectMap.get(a) || {x:0, y:0};
+        const br = rectMap.get(b) || {x:0, y:0};
+        return (ar.y - br.y) || (ar.x - br.x) || String(a).localeCompare(String(b), 'zh-Hans-CN', {numeric:true});
     };
-}
-function minimapBounds(){
-    const rects = (nodes || []).map(estimatedNodeRect);
-    rects.push(currentWorldViewRect());
-    if(!rects.length) return {x:0, y:0, w:1000, h:700};
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    rects.forEach(r => {
-        minX = Math.min(minX, r.x);
-        minY = Math.min(minY, r.y);
-        maxX = Math.max(maxX, r.x + r.w);
-        maxY = Math.max(maxY, r.y + r.h);
+    const buildLevels = ids => {
+        const idSet = new Set(ids);
+        const incoming = new Map(ids.map(id => [id, 0]));
+        const outgoing = new Map(ids.map(id => [id, []]));
+        (connections || []).forEach(c => {
+            if(!idSet.has(c.from) || !idSet.has(c.to)) return;
+            outgoing.get(c.from)?.push(c.to);
+            incoming.set(c.to, (incoming.get(c.to) || 0) + 1);
+        });
+        const roots = ids.filter(id => (incoming.get(id) || 0) === 0).sort(compareNodeIds);
+        const queue = roots.length ? [...roots] : [...ids].sort(compareNodeIds);
+        const levels = new Map(queue.map((id, index) => [id, roots.length ? 0 : index]));
+        while(queue.length){
+            const current = queue.shift();
+            (outgoing.get(current) || []).sort(compareNodeIds).forEach(next => {
+                const level = (levels.get(current) || 0) + 1;
+                levels.set(next, Math.max(levels.get(next) || 0, level));
+                incoming.set(next, (incoming.get(next) || 0) - 1);
+                if((incoming.get(next) || 0) <= 0) queue.push(next);
+            });
+        }
+        ids.filter(id => !levels.has(id)).sort(compareNodeIds).forEach((id, index) => {
+            const maxLevel = levels.size ? Math.max(...levels.values()) : -1;
+            levels.set(id, maxLevel + 1 + index);
+        });
+        const buckets = new Map();
+        ids.forEach(id => {
+            const level = levels.get(id) || 0;
+            if(!buckets.has(level)) buckets.set(level, []);
+            buckets.get(level).push(id);
+        });
+        return [...buckets.entries()]
+            .sort((a, b) => a[0] - b[0])
+            .map(([, levelIds]) => levelIds.sort(compareNodeIds));
+    };
+
+    const startX = 120;
+    let y = 120;
+    const columnGap = 110;
+    const rowGap = 80;
+    const groupGap = 140;
+    groups.sort((a, b) => (a.y - b.y) || (a.x - b.x)).forEach(group => {
+        const levels = buildLevels(group.ids);
+        const columnWidths = levels.map(level => Math.max(...level.map(id => rectMap.get(id)?.w || 260)));
+        const rowHeights = levels.map(level => Math.max(...level.map(id => rectMap.get(id)?.h || 160)));
+        let x = startX;
+        let groupHeight = 0;
+        levels.forEach((level, columnIndex) => {
+            let columnY = y;
+            level.forEach(id => {
+                const node = nodeMap.get(id);
+                const rect = rectMap.get(id);
+                if(!node || !rect) return;
+                node.x = x;
+                node.y = columnY;
+                columnY += rect.h + rowGap;
+            });
+            groupHeight = Math.max(groupHeight, columnY - y - rowGap, rowHeights[columnIndex] || 160);
+            x += (columnWidths[columnIndex] || 260) + columnGap;
+        });
+        y += Math.max(groupHeight, 160) + groupGap;
     });
-    const pad = Math.max(240, Math.max(maxX - minX, maxY - minY) * 0.08);
-    return {x:minX - pad, y:minY - pad, w:Math.max(1, maxX - minX + pad * 2), h:Math.max(1, maxY - minY + pad * 2)};
-}
-function scheduleMinimapRender(){
-    if(minimapRenderQueued) return;
-    minimapRenderQueued = true;
-    requestAnimationFrame(() => {
-        minimapRenderQueued = false;
-        renderMinimap();
-    });
-}
-function renderMinimap(){
-    if(!minimapContent || !minimapViewport) return;
-    const bounds = minimapBounds();
-    const cw = minimapContent.clientWidth || 172;
-    const ch = minimapContent.clientHeight || 110;
-    const scale = Math.min(cw / bounds.w, ch / bounds.h);
-    const mapW = bounds.w * scale;
-    const mapH = bounds.h * scale;
-    const ox = (cw - mapW) / 2;
-    const oy = (ch - mapH) / 2;
-    minimapState = {bounds, scale, ox, oy, cw, ch};
-    const nodeHtml = (nodes || []).map(n => {
-        const r = estimatedNodeRect(n);
-        return `<div class="minimap-node ${selected.has(n.id) ? 'selected' : ''}" style="left:${ox + (r.x - bounds.x) * scale}px;top:${oy + (r.y - bounds.y) * scale}px;width:${Math.max(3, r.w * scale)}px;height:${Math.max(3, r.h * scale)}px"></div>`;
-    }).join('');
-    minimapContent.innerHTML = `${nodeHtml}${nodes?.length ? '' : '<div class="minimap-empty">EMPTY</div>'}<div id="minimapViewport" class="minimap-viewport"></div>`;
-    minimapViewport = document.getElementById('minimapViewport');
-    updateMinimapViewport();
-}
-function updateMinimapViewport(){
-    if(!minimapViewport || !minimapState) return;
-    const r = currentWorldViewRect();
-    const {bounds, scale, ox, oy} = minimapState;
-    minimapViewport.style.left = `${ox + (r.x - bounds.x) * scale}px`;
-    minimapViewport.style.top = `${oy + (r.y - bounds.y) * scale}px`;
-    minimapViewport.style.width = `${Math.max(8, r.w * scale)}px`;
-    minimapViewport.style.height = `${Math.max(8, r.h * scale)}px`;
-}
-function minimapEventToWorld(e){
-    if(!minimapState) renderMinimap();
-    const state = minimapState;
-    const rect = minimapContent.getBoundingClientRect();
-    const x = (e.clientX - rect.left - state.ox) / state.scale + state.bounds.x;
-    const y = (e.clientY - rect.top - state.oy) / state.scale + state.bounds.y;
-    return {x, y};
+
+    selected.clear();
+    render();
+    fitAllNodesViewport();
+    scheduleSave();
+    setStatus(tr('canvas.autoArrangeDone') || '已按连线分组自动对齐排序');
 }
 function centerViewportOnWorldPoint(point){
     const rect = board.getBoundingClientRect();
@@ -3135,10 +3153,12 @@ function menuAdd(type){
     if(type === 'image') addImageNode(menuPoint);
     if(type === 'prompt') addPromptNode(menuPoint);
     if(type === 'loop') addLoopNode(menuPoint);
+    if(type === 'group') groupSelectedImages(menuPoint);
     if(type === 'llm') addLLMNode(menuPoint);
     if(type === 'generator') addGeneratorNode(menuPoint);
     if(type === 'video') addVideoNode(menuPoint);
     if(type === 'output') addOutputNode(menuPoint);
+    if(type === 'autoArrange') autoArrangeCanvasNodes();
 }
 function mediaKindForUpload(file){
     const type = String(file?.type || '').toLowerCase();
@@ -12347,7 +12367,7 @@ function closeOutputLightbox(){
     currentOutputLightboxUrl = '';
     setupOutputPromptPanel(null);
 }
-function groupSelectedImages(){
+function groupSelectedImages(point){
     if(!ensureCanvas()) return;
     const targets = [...selected].map(id => nodes.find(n => n.id === id)).filter(n => n?.type === 'image' || n?.type === 'prompt');
     let group;
@@ -12356,7 +12376,7 @@ function groupSelectedImages(){
         const box = nodeBounds(targets.map(n => n.id));
         group = {id:uid('grp'), type:'group', x:box.x - 24, y:box.y - 58, w:box.w + 48, h:box.h + 90, items:targets.map(n => n.id)};
     } else {
-        const p = defaultPoint(0, 0);
+        const p = point || defaultPoint(0, 0);
         group = {id:uid('grp'), type:'group', x:p.x, y:p.y, w:300, h:220, items:[]};
     }
     nodes.push(group);
@@ -12824,7 +12844,6 @@ function onNodeDrag(e){
     renderLinks();
     renderSelectionHub();
     if(workflowTransferModal?.classList.contains('open')) updateWorkflowTransferMeta();
-    scheduleMinimapRender();
 }
 function startNodeResize(e, node){
     e.preventDefault();
@@ -12857,7 +12876,6 @@ function onNodeResize(e){
     }
     renderLinks();
     renderSelectionHub();
-    scheduleMinimapRender();
 }
 function startLink(e, originId, originKind){
     e.stopPropagation();
@@ -12975,7 +12993,7 @@ function sanitizeConnections(){
 }
 function endDrag(event=null){
     const hadContentDrag = Boolean(dragNode || resizeNode || llmPaneDrag || knifeChanged || tempLink);
-    const hadViewportDrag = Boolean(dragBoard || minimapDrag);
+    const hadViewportDrag = Boolean(dragBoard);
     if(dragNode){
         const moved = [dragNode.node, ...(dragNode.children || []).map(c => c.node)].filter(Boolean);
         // 拖动 group/promptGroup 自身时不重新评估（成员跟着一起走，包含关系不变）
@@ -12998,7 +13016,6 @@ function endDrag(event=null){
     window.onmousemove = null;
     window.onmouseup = null;
     if(shouldRenderKnife) render();
-    scheduleMinimapRender();
     if(hadContentDrag) scheduleSave();
     else if(hadViewportDrag) scheduleViewportSave();
 }
@@ -13192,7 +13209,6 @@ function refreshSelectionVisuals(){
     renderLinks();
     renderSelectionHub();
     if(workflowTransferModal?.classList.contains('open')) updateWorkflowTransferMeta();
-    scheduleMinimapRender();
 }
 function pathEl(x1,y1,x2,y2,cls){
     const p = document.createElementNS('http://www.w3.org/2000/svg','path');
@@ -13312,24 +13328,8 @@ function isEditableTarget(target){
     const tag = target?.tagName;
     return tag === 'INPUT' || tag === 'TEXTAREA' || target?.isContentEditable || target?.closest?.('select, option');
 }
-minimap?.addEventListener('mousedown', e => {
-    if(!canvas || e.button !== 0) return;
-    e.preventDefault();
-    e.stopPropagation();
-    minimapDrag = true;
-    centerViewportOnWorldPoint(minimapEventToWorld(e));
-    window.onmousemove = e2 => {
-        if(minimapDrag) centerViewportOnWorldPoint(minimapEventToWorld(e2));
-    };
-    window.onmouseup = () => {
-        minimapDrag = false;
-        window.onmousemove = null;
-        window.onmouseup = null;
-        scheduleViewportSave();
-    };
-});
 function isZoomPreviewIgnoredTarget(target){
-    return !!target?.closest?.('#createMenu, #linkCreateMenu, #nodeInputMenu, #nodeOutputMenu, #imageNodeMenu, .minimap, #canvasAssetPanel, #assetManagerModal, #workflowTransferModal, #logModal, #promptTemplateModal, #imageEditModal, #outputLightbox');
+    return !!target?.closest?.('#createMenu, #linkCreateMenu, #nodeInputMenu, #nodeOutputMenu, #imageNodeMenu, #canvasAssetPanel, #assetManagerModal, #workflowTransferModal, #logModal, #promptTemplateModal, #imageEditModal, #outputLightbox');
 }
 board.addEventListener('mousedown', e => {
     if(!zoomPreviewState || e.button !== 0) return;
@@ -13348,7 +13348,7 @@ board.addEventListener('click', e => {
 }, true);
 function startBoardPan(e, opts={}){
     if(!canvas) return false;
-    if(isEditableTarget(e.target) || e.target.closest?.('#createMenu, #linkCreateMenu, #nodeInputMenu, #nodeOutputMenu, #imageNodeMenu, .minimap')) return false;
+    if(isEditableTarget(e.target) || e.target.closest?.('#createMenu, #linkCreateMenu, #nodeInputMenu, #nodeOutputMenu, #imageNodeMenu')) return false;
     e.preventDefault();
     e.stopPropagation();
     closeCreateMenu();
@@ -13621,7 +13621,6 @@ function escapeAttr(str){ return escapeHtml(str); }
 
 window.onload = async () => {
     applyTheme(localStorage.getItem('studio_theme') || localStorage.getItem(CANVAS_THEME_KEY) || 'light');
-    applyQuickToolbarState();
     if(window.StudioI18n) StudioI18n.apply();
     document.title = tr('canvas.title');
     initOutputCompareEvents();

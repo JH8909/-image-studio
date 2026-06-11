@@ -12,6 +12,7 @@
         "api.autoFill": { zh: "自动填写", en: "Auto-fill" },
         "api.provider": { zh: "平台", en: "Provider" },
         "api.delete": { zh: "删除", en: "Delete" },
+        "api.cancel": { zh: "取消", en: "Cancel" },
         "api.save": { zh: "保存", en: "Save" },
         "api.name": { zh: "显示名称", en: "Name" },
         "api.providerId": { zh: "平台 ID", en: "Provider ID" },

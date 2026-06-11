@@ -177,6 +177,11 @@ function broadcastStudioApiChange(type='providers-changed'){
     try { window.parent?.postMessage(message, '*'); } catch(e) {}
     try { window.top?.postMessage(message, '*'); } catch(e) {}
 }
+function closeApiSettingsPage(){
+    const message = { type:'api-settings-close', updated_at:Date.now() };
+    try { window.parent?.postMessage(message, '*'); } catch(e) {}
+    try { window.top?.postMessage(message, '*'); } catch(e) {}
+}
 function rhEditorSideScrollEl(){
     return rhWorkflowEditorNodeList?.closest?.('.rh-workflow-editor-side') || rhWorkflowEditorNodeList;
 }
@@ -3120,6 +3125,7 @@ async function saveProviders(){
         setStatus(tr('api.saved'));
         // 广播变更，画布等其他 iframe 立即重新拉取最新平台/模型列表
         broadcastStudioApiChange('providers-changed');
+        closeApiSettingsPage();
         return true;
     } catch(err) {
         setStatus(err.message || tr('api.saveFailed'));
