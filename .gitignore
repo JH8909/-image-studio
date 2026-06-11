@@ -1,0 +1,32 @@
+# Local runtime
+python/
+__pycache__/
+*.py[cod]
+
+# Generated media and user data
+assets/input/
+assets/output/
+output/
+data/
+history.json
+
+# Local credentials and environment
+.env
+.env.*
+*.key
+*.pem
+*.token
+
+# Logs and caches
+*.log
+.cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
