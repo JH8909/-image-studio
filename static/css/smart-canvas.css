@@ -340,6 +340,19 @@ video.node-img { object-fit:cover; background:#0f172a; }
 .image-node.dragging .thumb-item:hover, .image-node.dragging .image-wrap:hover { box-shadow:none; }
 .image-node.dragging .thumb-item:hover, .image-node.dragging .image-wrap:hover > img, .image-node.dragging .image-wrap:hover > .media-video-card { border-color:var(--line); }
 .thumb-item.image-selected, .image-wrap.image-selected > img, .image-wrap.image-selected > .media-video-card, .thumb-item.image-selected:hover, .image-wrap.image-selected:hover > img, .image-wrap.image-selected:hover > .media-video-card { border-color:var(--strong); }
+.image-node:not(.empty-node) .image-wrap,
+.image-node:not(.empty-node) .node-img,
+.image-node:not(.empty-node) .media-video-card,
+.image-node:not(.empty-node) .media-video-card video,
+.image-node:not(.empty-node) .media-video-card img[data-preview-kind="video"],
+.image-node:not(.empty-node) .thumb-item,
+.image-node:not(.empty-node) .thumb-item img,
+.image-node:not(.empty-node) .thumb-item video,
+.image-node:not(.empty-node) .media-thumb.video-thumb,
+.image-node:not(.empty-node) .media-thumb.video-thumb video,
+.image-node:not(.empty-node) .media-thumb.video-thumb img[data-preview-kind="video"] {
+    border-radius:0;
+}
 .image-node.dragging .floating-node-actions,
 .image-node.dragging .mini-x,
 .image-node.dragging .node-port,

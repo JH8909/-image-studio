@@ -289,6 +289,13 @@ body.canvas-selecting .node .llm-bubble { pointer-events:none !important; }
 .image-preview-wrap.drag-over .media-card { outline:2px solid #111827; outline-offset:2px; background:#fff; }
 .node.sized.image-node .node-body { display:flex; flex-direction:column; gap:8px; }
 .node.sized.image-node img { flex:1; min-height:0; height:100%; max-height:none; }
+.image-node img,
+.image-node video,
+.image-node .media-card,
+.node.sized.image-node img,
+.node.sized.image-node video {
+    border-radius:0;
+}
 .image-caption { flex:0 0 auto; }
 .blank-image { height:190px; border:1px dashed #cbd5e1; border-radius:16px; background:#f8fafc; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; color:#94a3b8; cursor:pointer; transition:all .2s var(--ease); }
 .node.sized .blank-image { height:100%; min-height:72px; }
@@ -583,9 +590,15 @@ input[type=range].canvas-range::-webkit-slider-runnable-track { height:3px; bord
 .output-grid img { display:block; width:100%; height:100%; object-fit:contain; border-radius:16px; border:1px solid #edf2f7; background:#f8fafc; cursor:zoom-in; transition:border-color .2s var(--ease); }
 .output-grid img:active { cursor:grabbing; }
 .output-grid video { display:block; width:100%; height:100%; object-fit:contain; border-radius:16px; border:1px solid #edf2f7; background:#0f172a; cursor:pointer; }
+.output-grid img,
+.output-grid video,
+.output-img-wrap.loading-wrap {
+    border-radius:0;
+}
 .output-img-wrap:hover img { border-color:#94a3b8; }
 .output-video-badge { position:absolute; left:7px; bottom:7px; height:22px; padding:0 8px; border-radius:999px; display:flex; align-items:center; gap:4px; background:rgba(15,23,42,.78); color:#fff; font-size:10px; font-weight:800; pointer-events:none; }
 .output-img-wrap.loading-wrap { width:100%; aspect-ratio:1; border-radius:16px; border:1px solid #edf2f7; background:#f8fafc; display:flex; align-items:center; justify-content:center; min-height:80px; }
+.output-img-wrap.loading-wrap { border-radius:0; }
 .output-spinner { width:28px; height:28px; border:3px solid #e2e8f0; border-top-color:#94a3b8; border-radius:50%; animation:spin .8s linear infinite; }
 .output-time-pill { position:absolute; top:7px; right:7px; min-width:38px; height:22px; padding:0 8px; border-radius:999px; display:flex; align-items:center; justify-content:center; background:rgba(17,24,39,.86); color:#fff; font-size:10px; font-weight:900; z-index:3; pointer-events:none; box-shadow:0 6px 18px rgba(15,23,42,.18); }
 .output-time-pill.running { background:rgba(37,99,235,.9); }

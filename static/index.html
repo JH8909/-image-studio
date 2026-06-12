@@ -23,11 +23,11 @@
             } catch(e) {}
         })();
     </script>
-    <script src="/static/vendor/js/tailwindcss-cdn.js?v=2026.06.10.1.1779672342"></script>
-    <script src="/static/js/theme.js?v=2026.06.10.1.1780456238"></script>
-    <script src="/static/js/i18n.js?v=2026.06.10.1.1780902932"></script>
+    <script src="/static/vendor/js/tailwindcss-cdn.js?v=2026.06.11.1781187538"></script>
+    <script src="/static/js/theme.js?v=2026.06.11.1781205633"></script>
+    <script src="/static/js/i18n.js?v=2026.06.11.1781187449"></script>
     <style>
-        @import url('/static/vendor/css/fonts.css?v=2026.06.10.1.1779672342');
+        @import url('/static/vendor/css/fonts.css?v=2026.06.11.1781187486');
 
         /* 本地 Tailwind 工具类兜底：CDN 慢/未就绪时也能立刻给图标尺寸，避免首屏左侧栏空白 */
         .w-1\.5 { width: 0.375rem; }
@@ -1330,6 +1330,183 @@
         .sidebar.is-collapsing:hover .update-now-text {
             max-width: 42px;
         }
+
+        /* Sidebar locked to icon-only mode. */
+        .sidebar,
+        .sidebar:hover,
+        .sidebar.is-pinned,
+        .sidebar.is-collapsing:hover {
+            width: 80px;
+            min-width: 80px;
+            z-index: 200;
+            overflow: visible;
+        }
+
+        .sidebar:hover .nav-item,
+        .sidebar.is-pinned .nav-item,
+        .sidebar:hover .nav-fold-toggle,
+        .sidebar.is-pinned .nav-fold-toggle {
+            width: 48px;
+        }
+
+        .sidebar:hover .nav-text,
+        .sidebar.is-pinned .nav-text,
+        .sidebar:hover .side-pill-text,
+        .sidebar.is-pinned .side-pill-text,
+        .sidebar:hover .update-now-text,
+        .sidebar.is-pinned .update-now-text {
+            opacity: 0;
+            max-width: 0;
+            margin-left: 0;
+        }
+
+        .sidebar:hover .side-pill,
+        .sidebar.is-pinned .side-pill {
+            width: 44px;
+            gap: 0;
+        }
+
+        .sidebar:hover .project-version-badge,
+        .sidebar.is-pinned .project-version-badge,
+        .sidebar:hover .update-now-btn,
+        .sidebar.is-pinned .update-now-btn {
+            width: 44px;
+        }
+
+        .sidebar:hover .project-version-compact,
+        .sidebar.is-pinned .project-version-compact,
+        .sidebar:hover .update-version-compact,
+        .sidebar.is-pinned .update-version-compact {
+            display: inline;
+        }
+
+        .sidebar:hover .project-version-full,
+        .sidebar.is-pinned .project-version-full,
+        .sidebar:hover .update-version-full,
+        .sidebar.is-pinned .update-version-full,
+        .sidebar:hover .update-action-prefix,
+        .sidebar.is-pinned .update-action-prefix,
+        .sidebar:hover .update-now-btn svg,
+        .sidebar.is-pinned .update-now-btn svg,
+        .sidebar:hover .settings-fold-chevron,
+        .sidebar.is-pinned .settings-fold-chevron {
+            display: none;
+            opacity: 0;
+            max-width: 0;
+        }
+
+        .stage {
+            margin: 0;
+            border-radius: 0;
+            border: 0;
+            background: var(--bg);
+        }
+
+        .nano-monitor {
+            position: static;
+            width: 60px;
+            min-height: auto;
+            padding: 6px 5px;
+            margin-top: 8px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            border-radius: 14px;
+            box-shadow: none;
+        }
+
+        .nano-monitor .stat-group {
+            gap: 3px;
+            font-size: 8px;
+            line-height: 1;
+        }
+
+        .nano-monitor .label-nano {
+            display: inline;
+            font-size: 7px;
+            letter-spacing: .04em;
+        }
+
+        .nano-monitor .divider {
+            width: 24px;
+            height: 1px;
+        }
+
+        .sidebar .nav-item,
+        .sidebar .nav-fold-toggle,
+        .sidebar .side-pill {
+            overflow: visible;
+        }
+
+        .sidebar nav,
+        .sidebar .nav-fold-group {
+            overflow: visible;
+        }
+
+        .sidebar .nav-item[data-title]::after,
+        .sidebar .nav-fold-toggle[data-title]::after,
+        .sidebar .side-pill[data-title]::after {
+            content: attr(data-title) "\A" attr(data-desc);
+            position: absolute;
+            left: calc(100% + 16px);
+            top: 50%;
+            z-index: 120;
+            width: max-content;
+            max-width: 220px;
+            padding: 10px 12px;
+            border: 1px solid rgba(148, 163, 184, .28);
+            border-radius: 12px;
+            background: rgba(15, 23, 42, .96);
+            color: #f8fafc;
+            box-shadow: 0 18px 42px rgba(0,0,0,.28);
+            font-size: 12px;
+            font-weight: 800;
+            line-height: 1.45;
+            white-space: pre;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-50%) translateX(-4px);
+            transition: opacity .14s ease, transform .14s ease;
+        }
+
+        .sidebar .nav-item[data-title]::before,
+        .sidebar .nav-fold-toggle[data-title]::before,
+        .sidebar .side-pill[data-title]::before {
+            content: "";
+            position: absolute;
+            left: calc(100% + 10px);
+            top: 50%;
+            z-index: 121;
+            width: 10px;
+            height: 10px;
+            border-left: 1px solid rgba(148, 163, 184, .28);
+            border-bottom: 1px solid rgba(148, 163, 184, .28);
+            background: rgba(15, 23, 42, .96);
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-50%) rotate(45deg);
+            transition: opacity .14s ease;
+        }
+
+        .sidebar .nav-item[data-title]:hover::after,
+        .sidebar .nav-item[data-title]:focus-visible::after,
+        .sidebar .nav-fold-toggle[data-title]:hover::after,
+        .sidebar .nav-fold-toggle[data-title]:focus-visible::after,
+        .sidebar .side-pill[data-title]:hover::after,
+        .sidebar .side-pill[data-title]:focus-visible::after {
+            opacity: 1;
+            transform: translateY(-50%) translateX(0);
+        }
+
+        .sidebar .nav-item[data-title]:hover::before,
+        .sidebar .nav-item[data-title]:focus-visible::before,
+        .sidebar .nav-fold-toggle[data-title]:hover::before,
+        .sidebar .nav-fold-toggle[data-title]:focus-visible::before,
+        .sidebar .side-pill[data-title]:hover::before,
+        .sidebar .side-pill[data-title]:focus-visible::before {
+            opacity: 1;
+        }
     </style>
 </head>
 
@@ -1342,7 +1519,7 @@
             </button>
 
             <nav>
-                <button class="nav-fold-toggle" id="local-nav-toggle" type="button" onclick="toggleLocalNav()" aria-expanded="true" title="折叠本地功能">
+                <button class="nav-fold-toggle" id="local-nav-toggle" type="button" onclick="toggleLocalNav()" aria-expanded="true" title="折叠本地功能" data-title="本地功能" data-desc="展开本地创作工具">
                     <svg class="nav-fold-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <polyline points="6 9 12 15 18 9"></polyline>
                     </svg>
@@ -1350,25 +1527,25 @@
                 </button>
 
                 <div class="nav-fold-group" id="local-nav-group">
-                    <div class="nav-item active" onclick="switchUI(this, 'zimage')">
+                    <div class="nav-item active" onclick="switchUI(this, 'zimage')" data-title="文生图" data-desc="从提示词生成图片">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.587-1.587a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
                         </svg>
                         <span class="nav-text" data-i18n="nav.textToImage">文生图</span>
                     </div>
-                    <div class="nav-item" onclick="switchUI(this, 'enhance')">
+                    <div class="nav-item" onclick="switchUI(this, 'enhance')" data-title="细节增强" data-desc="增强图片细节与质感">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
                         </svg>
                         <span class="nav-text" data-i18n="nav.enhance">细节增强</span>
                     </div>
-                    <div class="nav-item" onclick="switchUI(this, 'klein')">
+                    <div class="nav-item" onclick="switchUI(this, 'klein')" data-title="图片编辑" data-desc="编辑与重绘已有图片">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
                         </svg>
                         <span class="nav-text" data-i18n="nav.imageEdit">图片编辑</span>
                     </div>
-                    <div class="nav-item" onclick="switchUI(this, 'angle')">
+                    <div class="nav-item" onclick="switchUI(this, 'angle')" data-title="角度控制" data-desc="调整视角与空间角度">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
                             <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
@@ -1381,13 +1558,13 @@
                 <!-- 分隔线 -->
                 <div style="width:32px;height:1px;background:var(--border);margin:8px auto;transition:background 0.3s;"></div>
 
-                <div class="nav-item" onclick="switchUI(this, 'gpt-chat')">
+                <div class="nav-item" onclick="switchUI(this, 'gpt-chat')" data-title="GPT 对话" data-desc="打开提示词与创意对话">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                     </svg>
                     <span class="nav-text" data-i18n="nav.gpt">GPT 对话</span>
                 </div>
-                <div class="nav-item" onclick="switchUI(this, 'canvas')">
+                <div class="nav-item" onclick="switchUI(this, 'canvas')" data-title="无限画布" data-desc="打开画布与节点工作流">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="3" width="7" height="7"></rect>
                         <rect x="14" y="3" width="7" height="7"></rect>
@@ -1396,7 +1573,7 @@
                     </svg>
                     <span class="nav-text" data-i18n="nav.canvas">无限画布</span>
                 </div>
-                <div class="nav-item" onclick="switchUI(this, 'asset-manager')">
+                <div class="nav-item" onclick="switchUI(this, 'asset-manager')" data-title="素材库" data-desc="管理图片、提示词和工作流素材">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M4 19.5V6.8A2.8 2.8 0 0 1 6.8 4h10.4A2.8 2.8 0 0 1 20 6.8v12.7"></path>
                         <path d="M7 8h10"></path>
@@ -1467,6 +1644,19 @@
                     </button>
                     <div id="project-version-badge" class="project-version-badge" title="点击检测更新" role="button" tabindex="0" onclick="checkForUpdates(true)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();checkForUpdates(true);}">v-</div>
                 </div>
+                <div class="nano-monitor" id="nano-monitor">
+                    <div class="stat-group">
+                        <div class="pulse-dot animate-pulse"></div>
+                        <div class="spinner-nano"></div>
+                        <span class="label-nano">ONLINE</span>
+                        <span id="online-val">1</span>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="stat-group">
+                        <span class="label-nano">QUEUE</span>
+                        <span id="queue-val">0</span>
+                    </div>
+                </div>
             </div>
 
         </aside>
@@ -1489,27 +1679,14 @@
         </script>
 
         <main class="stage">
-            <iframe id="frame-zimage" data-src="/static/zimage.html?v=2026.06.10.1.1781140461" class="active" scrolling="yes"></iframe>
-            <iframe id="frame-enhance" data-src="/static/enhance.html?v=2026.06.10.1.1781140461" scrolling="yes"></iframe>
-            <iframe id="frame-klein" data-src="/static/klein.html?v=2026.06.10.1.1781140461" scrolling="yes"></iframe>
-            <iframe id="frame-angle" data-src="/static/angle.html?v=2026.06.10.1.1781140461" scrolling="yes"></iframe>
-            <iframe id="frame-gpt-chat" data-src="/static/gpt-chat.html?v=2026.06.10.1.1781140461" scrolling="yes"></iframe>
-            <iframe id="frame-canvas" data-src="/static/canvas.html?v=2026.06.12.014754" scrolling="yes"></iframe>
-            <iframe id="frame-asset-manager" data-src="/static/asset-manager.html?v=2026.06.10.1.1781172686" scrolling="yes"></iframe>
-            <iframe id="frame-api-settings" data-src="/static/api-settings.html?v=2026.06.10.1.1781168425" scrolling="yes"></iframe>
-            <div class="nano-monitor" id="nano-monitor">
-                <div class="stat-group">
-                    <div class="pulse-dot animate-pulse"></div>
-                    <div class="spinner-nano"></div>
-                    <span class="label-nano">ONLINE</span>
-                    <span id="online-val">1</span>
-                </div>
-                <div class="divider"></div>
-                <div class="stat-group">
-                    <span class="label-nano">QUEUE</span>
-                    <span id="queue-val">0</span>
-                </div>
-            </div>
+            <iframe id="frame-zimage" data-src="/static/zimage.html?v=2026.06.11.1781207072" class="active" scrolling="yes"></iframe>
+            <iframe id="frame-enhance" data-src="/static/enhance.html?v=2026.06.11.1781207072" scrolling="yes"></iframe>
+            <iframe id="frame-klein" data-src="/static/klein.html?v=2026.06.11.1781207072" scrolling="yes"></iframe>
+            <iframe id="frame-angle" data-src="/static/angle.html?v=2026.06.11.1781207072" scrolling="yes"></iframe>
+            <iframe id="frame-gpt-chat" data-src="/static/gpt-chat.html?v=2026.06.11.1781207072" scrolling="yes"></iframe>
+            <iframe id="frame-canvas" data-src="/static/canvas.html?v=2026.06.11.1781207072" scrolling="yes"></iframe>
+            <iframe id="frame-asset-manager" data-src="/static/asset-manager.html?v=2026.06.11.1781207072" scrolling="yes"></iframe>
+            <iframe id="frame-api-settings" data-src="/static/api-settings.html?v=2026.06.11.1781207072" scrolling="yes"></iframe>
         </main>
     </div>
 
@@ -1631,29 +1808,23 @@
             const sidebar = document.getElementById('studioSidebar');
             const logo = document.getElementById('sidebarLogoToggle');
             if(!sidebar) return;
-            sidebar.classList.toggle('is-pinned', pinned);
-            if(!pinned) {
-                sidebar.classList.add('is-collapsing');
-                window.setTimeout(() => sidebar.classList.remove('is-collapsing'), 360);
-            } else {
-                sidebar.classList.remove('is-collapsing');
-            }
+            sidebar.classList.remove('is-pinned', 'is-collapsing');
             if(logo) {
-                logo.setAttribute('aria-pressed', pinned ? 'true' : 'false');
-                logo.title = pinned ? '收起导航栏' : '固定导航栏';
+                logo.setAttribute('aria-pressed', 'false');
+                logo.title = 'AI Studio';
             }
-            if(!options.skipRemember) localStorage.setItem(SIDEBAR_PINNED_KEY, pinned ? '1' : '0');
+            if(!options.skipRemember) localStorage.removeItem(SIDEBAR_PINNED_KEY);
         }
 
         function toggleSidebarPinned(event) {
             event?.preventDefault?.();
             event?.stopPropagation?.();
-            const sidebar = document.getElementById('studioSidebar');
-            setSidebarPinned(!sidebar?.classList.contains('is-pinned'));
+            setSidebarPinned(false);
         }
 
         function restoreSidebarPinned() {
-            setSidebarPinned(localStorage.getItem(SIDEBAR_PINNED_KEY) === '1', { skipRemember:true });
+            localStorage.removeItem(SIDEBAR_PINNED_KEY);
+            setSidebarPinned(false, { skipRemember:true });
         }
 
         function setLocalNavCollapsed(collapsed, options = {}) {
@@ -1768,7 +1939,28 @@
             studioApiChannel.onmessage = event => forwardStudioApiChange(event.data);
         } catch(e) {}
 
+        function applySidebarTooltips() {
+            const items = [
+                ['#local-nav-toggle', '本地功能', '展开本地创作工具'],
+                ['[onclick*="zimage"]', '文生图', '从提示词生成图片'],
+                ['[onclick*="enhance"]', '细节增强', '增强图片细节与质感'],
+                ['[onclick*="klein"]', '图片编辑', '编辑与重绘已有图片'],
+                ['[onclick*="angle"]', '角度控制', '调整视角与空间角度'],
+                ['[onclick*="gpt-chat"]', 'GPT 对话', '打开提示词与创意对话'],
+                ['[onclick*="canvas"]', '无限画布', '打开画布与节点工作流'],
+                ['[onclick*="asset-manager"]', '素材库', '管理图片、提示词和工作流素材'],
+                ['#settings-fold-toggle', '设置', '打开系统与项目设置']
+            ];
+            items.forEach(([selector, title, desc]) => {
+                const el = document.querySelector(selector);
+                if(!el) return;
+                el.dataset.title = title;
+                el.dataset.desc = desc;
+            });
+        }
+
         function restoreActivePage() {
+            applySidebarTooltips();
             restoreSidebarPinned();
             const id = PAGE_IDS.includes(localStorage.getItem(ACTIVE_PAGE_KEY)) ? localStorage.getItem(ACTIVE_PAGE_KEY) : DEFAULT_PAGE_ID;
             restoreLocalNav(id);

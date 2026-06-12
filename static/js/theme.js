@@ -151,6 +151,139 @@
         }, 160);
     }
 
+    const GLOW_SELECTOR = [
+        'button',
+        '[role="button"]',
+        '.nav-item',
+        '.side-pill',
+        '.project-version-badge',
+        '.action-btn',
+        '.primary-btn',
+        '.ghost-btn',
+        '.tool-btn',
+        '.asset-btn',
+        '.icon-btn',
+        '.preview-icon-btn',
+        '.menu-btn',
+        '.canvas-asset-icon-btn',
+        '.workflow-transfer-btn'
+    ].join(',');
+
+    const GLOW_STYLE_ID = 'studio-button-glow-style';
+    const GLOW_STYLE = `
+.studio-glow-button {
+    --studio-glow-x: 50%;
+    --studio-glow-y: 50%;
+    --studio-glow-edge: 0;
+    --studio-glow-ring: rgba(216, 222, 233, 0);
+    --studio-glow-fill: rgba(216, 222, 233, 0);
+    --studio-glow-shadow: rgba(216, 222, 233, 0);
+    transition:
+        background-color .16s ease,
+        border-color .16s ease,
+        color .16s ease,
+        box-shadow .16s ease,
+        transform .16s ease;
+}
+.studio-glow-button:hover,
+.studio-glow-button:focus-visible {
+    background-image: radial-gradient(
+        circle at var(--studio-glow-x) var(--studio-glow-y),
+        var(--studio-glow-fill) 0%,
+        transparent 48%
+    );
+    background-blend-mode: screen;
+    border-color: var(--studio-glow-ring) !important;
+    box-shadow:
+        0 0 0 1px var(--studio-glow-ring),
+        inset 0 0 calc(10px + (18px * var(--studio-glow-edge))) var(--studio-glow-fill),
+        0 0 calc(12px + (22px * var(--studio-glow-edge))) var(--studio-glow-shadow) !important;
+}
+.studio-glow-button:active {
+    transform: translateY(1px) scale(.99);
+}
+.studio-glow-button:disabled,
+.studio-glow-button[disabled],
+.studio-glow-button[aria-disabled="true"] {
+    box-shadow: none !important;
+    transform: none;
+}`;
+    let glowInitialized = false;
+
+    function ensureButtonGlowStyles(){
+        if(document.getElementById(GLOW_STYLE_ID)) return;
+        const style = document.createElement('style');
+        style.id = GLOW_STYLE_ID;
+        style.textContent = GLOW_STYLE;
+        document.head.appendChild(style);
+    }
+
+    function shouldGlow(el){
+        return !!(
+            el &&
+            el instanceof HTMLElement &&
+            el.matches(GLOW_SELECTOR) &&
+            !el.closest('[data-studio-glow="off"]') &&
+            !el.classList.contains('studio-glow-ignore')
+        );
+    }
+
+    function applyButtonGlow(root = document){
+        root.querySelectorAll?.(GLOW_SELECTOR).forEach(el => {
+            if(shouldGlow(el)) el.classList.add('studio-glow-button');
+        });
+    }
+
+    function updateGlowFromPointer(event){
+        const el = event.target?.closest?.('.studio-glow-button');
+        if(!shouldGlow(el) || el.disabled || el.getAttribute('aria-disabled') === 'true') return;
+        const rect = el.getBoundingClientRect();
+        if(!rect.width || !rect.height) return;
+        const x = Math.max(0, Math.min(event.clientX - rect.left, rect.width));
+        const y = Math.max(0, Math.min(event.clientY - rect.top, rect.height));
+        const edgeDistance = Math.min(x, y, rect.width - x, rect.height - y);
+        const edgeLimit = Math.max(18, Math.min(rect.width, rect.height) * .48);
+        const edge = Math.max(0, Math.min(1, 1 - edgeDistance / edgeLimit));
+        const opacity = Math.max(.16, edge);
+        el.style.setProperty('--studio-glow-x', `${((x / rect.width) * 100).toFixed(2)}%`);
+        el.style.setProperty('--studio-glow-y', `${((y / rect.height) * 100).toFixed(2)}%`);
+        el.style.setProperty('--studio-glow-edge', edge.toFixed(3));
+        el.style.setProperty('--studio-glow-ring', `rgba(216, 222, 233, ${(0.18 + opacity * 0.42).toFixed(3)})`);
+        el.style.setProperty('--studio-glow-fill', `rgba(216, 222, 233, ${(0.04 + opacity * 0.12).toFixed(3)})`);
+        el.style.setProperty('--studio-glow-shadow', `rgba(216, 222, 233, ${(0.08 + opacity * 0.16).toFixed(3)})`);
+    }
+
+    function resetGlow(event){
+        const el = event.target?.closest?.('.studio-glow-button');
+        if(!el) return;
+        el.style.setProperty('--studio-glow-edge', '0');
+        el.style.setProperty('--studio-glow-ring', 'rgba(216, 222, 233, 0)');
+        el.style.setProperty('--studio-glow-fill', 'rgba(216, 222, 233, 0)');
+        el.style.setProperty('--studio-glow-shadow', 'rgba(216, 222, 233, 0)');
+    }
+
+    function initButtonGlow(){
+        if(glowInitialized) return;
+        glowInitialized = true;
+        ensureButtonGlowStyles();
+        applyButtonGlow();
+        document.addEventListener('pointermove', updateGlowFromPointer, { passive: true });
+        document.addEventListener('pointerleave', resetGlow, true);
+        document.addEventListener('pointercancel', resetGlow, true);
+        if(window.MutationObserver) {
+            const observer = new MutationObserver(records => {
+                records.forEach(record => {
+                    record.addedNodes.forEach(node => {
+                        if(!(node instanceof HTMLElement)) return;
+                        if(shouldGlow(node)) node.classList.add('studio-glow-button');
+                        applyButtonGlow(node);
+                    });
+                });
+            });
+            observer.observe(document.documentElement, { childList: true, subtree: true });
+        }
+    }
+
     window.StudioTheme = {
         key: KEY,
         get: currentTheme,
@@ -175,10 +308,17 @@
     applyTheme(currentTheme());
     applyScale(currentScaleMode());
 
-    document.addEventListener('DOMContentLoaded', () => {
+    function initDomFeatures(){
         applyTheme(currentTheme());
         applyScale(currentScaleMode());
-    });
+        initButtonGlow();
+    }
+
+    if(document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initDomFeatures);
+    } else {
+        initDomFeatures();
+    }
     window.addEventListener('message', event => {
         if(event.data?.type === 'studio-theme') applyTheme(event.data.theme);
         if(event.data?.type === 'studio-ui-scale') setScaleMode(event.data.mode, false);
