@@ -229,6 +229,7 @@ let pendingPurgeCanvasId = null;
 let emojiPickerCanvasId = null;
 let canvasMetaAnchorId = '';
 let canvasSortMode = (() => { try { return localStorage.getItem('canvasSortMode') || 'recent'; } catch(e){ return 'recent'; } })();
+const LAST_OPEN_CANVAS_ID_KEY = 'canvas_last_open_id';
 const CANVAS_COLOR_OPTIONS = ['red','orange','amber','green','teal','blue','violet','pink','slate'];
 let localCanvasDirty = false;
 let savingCanvasNow = false;
@@ -1422,6 +1423,22 @@ function updateCanvasListRecord(record){
     sortCanvasListByUpdated();
     renderCanvasList();
 }
+function canvasIdFromLocation(){
+    try { return new URLSearchParams(window.location.search).get('id') || ''; }
+    catch(e) { return ''; }
+}
+function rememberOpenCanvasId(id){
+    if(!id) return;
+    try { localStorage.setItem(LAST_OPEN_CANVAS_ID_KEY, id); } catch(e) {}
+    try {
+        const url = `/static/canvas.html?id=${encodeURIComponent(id)}&v=2026.06.13.2`;
+        window.parent?.postMessage?.({type:'canvas-frame-url', url}, '*');
+    } catch(e) {}
+}
+function lastOpenCanvasId(){
+    try { return localStorage.getItem(LAST_OPEN_CANVAS_ID_KEY) || ''; }
+    catch(e) { return ''; }
+}
 async function touchCanvasOpened(id){
     if(!id) return null;
     try {
@@ -1653,6 +1670,7 @@ async function createCanvas(){
         }
         resetCascadeRuntimeState();
         canvas = data.canvas;
+        rememberOpenCanvasId(canvas.id);
         canvas.logs = canvas.logs || [];
         nodes = canvas.nodes || [];
         connections = canvas.connections || [];
@@ -1799,6 +1817,7 @@ async function openCanvas(id){
             openSmartCanvasPage(canvas.id);
             return;
         }
+        rememberOpenCanvasId(canvas.id);
         canvas.logs = canvas.logs || [];
         nodes = canvas.nodes || [];
         connections = canvas.connections || [];
@@ -11096,7 +11115,7 @@ function runTaskLabel(run){
     if(run?.taskLabel) return run.taskLabel;
     if(run?.nodeType === 'comfy') return comfyRunLabel(node);
     if(run?.nodeType === 'ltxDirector') return tr('canvas.ltxDirector');
-    if(run?.nodeType === 'generator') return node.model || 'API Image';
+    if(run?.nodeType === 'generator') return node.model || tr('canvas.apiGenerate');
     if(run?.nodeType === 'video') return node.model || 'Video';
     if(run?.nodeType === 'msgen') return node.msCustomModel || node.msgenModel || 'Modelscope';
     return run?.nodeType || 'Generate';
@@ -11114,7 +11133,7 @@ function requestMetaFromResult(result={}){
 }
 function runPlatformLabel(run){
     const node = run?.node || {};
-    if(run?.nodeType === 'generator') return providerById(node.apiProvider || 'comfly')?.name || node.apiProvider || 'API';
+    if(run?.nodeType === 'generator') return providerById(node.apiProvider || 'comfly')?.name || node.apiProvider || tr('canvas.apiGenerate');
     if(run?.nodeType === 'msgen') return 'Modelscope';
     if(run?.nodeType === 'video') return providerById(node.apiProvider || 'comfly')?.name || node.apiProvider || 'Video';
     if(run?.nodeType === 'comfy') return 'ComfyUI';
@@ -11552,7 +11571,8 @@ function outputGridLayout(node){
 }
 function renderOutputGrid(node, pendingHtml=''){
     const layout = outputGridLayout(node);
-    const gridClass = layout ? 'output-grid grid-layout' : 'output-grid';
+    const single = !layout && (node.images || []).length === 1 && !pendingHtml;
+    const gridClass = layout ? 'output-grid grid-layout' : `output-grid${single ? ' single-output' : ''}`;
     const style = layout ? ` style="--grid-cols:${Math.max(1, Number(layout.cols || 1))}"` : '';
     return `<div class="${gridClass}"${style}>${(node.images || []).map(item => renderOutputMedia(item, !!layout)).join('')}${pendingHtml}</div>`;
 }
@@ -13117,9 +13137,11 @@ function portPoint(id, kind){
 function renderLinks(){
     linksEl.innerHTML = '';
     linkControlsEl.innerHTML = '';
+    appendConnectionFlowGradient(linksEl);
     connections.forEach(c => {
         const a = portPoint(c.from, 'out'), b = portPoint(c.to, 'in');
         linksEl.appendChild(pathEl(a.x, a.y, b.x, b.y, 'link'));
+        linksEl.appendChild(pathEl(a.x, a.y, b.x, b.y, 'link link-flow-glow'));
         const btn = linkDeleteButton(c, a, b);
         linkControlsEl.appendChild(btn);
         linksEl.appendChild(linkHitEl(a.x, a.y, b.x, b.y, c.id));
@@ -13209,6 +13231,39 @@ function refreshSelectionVisuals(){
     renderLinks();
     renderSelectionHub();
     if(workflowTransferModal?.classList.contains('open')) updateWorkflowTransferMeta();
+}
+function appendConnectionFlowGradient(svg){
+    const ns = 'http://www.w3.org/2000/svg';
+    const defs = document.createElementNS(ns, 'defs');
+    const gradient = document.createElementNS(ns, 'linearGradient');
+    gradient.id = 'connectionFlowGlow';
+    gradient.setAttribute('gradientUnits', 'userSpaceOnUse');
+    gradient.setAttribute('x1', '-1600');
+    gradient.setAttribute('y1', '0');
+    gradient.setAttribute('x2', '1600');
+    gradient.setAttribute('y2', '0');
+    [
+        ['0%', 'rgba(255,255,255,0.08)'],
+        ['38%', 'rgba(255,255,255,0.22)'],
+        ['50%', 'rgba(255,255,255,1)'],
+        ['62%', 'rgba(255,255,255,0.22)'],
+        ['100%', 'rgba(255,255,255,0.08)']
+    ].forEach(([offset, color]) => {
+        const stop = document.createElementNS(ns, 'stop');
+        stop.setAttribute('offset', offset);
+        stop.setAttribute('stop-color', color);
+        gradient.appendChild(stop);
+    });
+    const animate = document.createElementNS(ns, 'animateTransform');
+    animate.setAttribute('attributeName', 'gradientTransform');
+    animate.setAttribute('type', 'translate');
+    animate.setAttribute('from', '-1800 0');
+    animate.setAttribute('to', '7800 0');
+    animate.setAttribute('dur', '6.5s');
+    animate.setAttribute('repeatCount', 'indefinite');
+    gradient.appendChild(animate);
+    defs.appendChild(gradient);
+    svg.appendChild(defs);
 }
 function pathEl(x1,y1,x2,y2,cls){
     const p = document.createElementNS('http://www.w3.org/2000/svg','path');
@@ -13629,5 +13684,10 @@ window.onload = async () => {
     await loadConfig();
     pruneMissingComfyWorkflows();
     await loadCanvasList(false);
-    setCanvasMode(false);
+    const restoreId = canvasIdFromLocation() || lastOpenCanvasId();
+    if(restoreId && canvases.some(item => item.id === restoreId && (item.kind || 'classic') !== 'smart')) {
+        await openCanvas(restoreId);
+    } else if(!canvas) {
+        setCanvasMode(false);
+    }
 };

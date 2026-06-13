@@ -2,7 +2,7 @@
     if(!window.StudioI18n) return;
     window.StudioI18n.register({
         "smart.title": { zh: "智能画布", en: "Smart Canvas" },
-        "smart.engineApi": { zh: "API生成", en: "API" },
+        "smart.engineApi": { zh: "图像生成", en: "图像生成" },
         "smart.engineVolcengine": { zh: "火山引擎", en: "Volcengine" },
         "smart.engineMs": { zh: "Modelscope生成", en: "Modelscope" },
         "smart.engineComfy": { zh: "ComfyUI生成", en: "ComfyUI" },

@@ -1790,6 +1790,7 @@
         localStorage.setItem("client_id", CID);
         const ACTIVE_PAGE_KEY = 'studio_active_page';
         const LAST_NON_SETTINGS_PAGE_KEY = 'studio_last_non_settings_page';
+        const CANVAS_FRAME_URL_KEY = 'studio_canvas_frame_url';
         const LOCAL_NAV_COLLAPSED_KEY = 'studio_local_nav_collapsed';
         const SIDEBAR_SETTINGS_COLLAPSED_KEY = 'studio_sidebar_settings_collapsed';
         const SIDEBAR_PINNED_KEY = 'studio_sidebar_pinned';
@@ -1932,6 +1933,12 @@
                 return;
             }
             forwardStudioApiChange(event.data);
+            if(event.data?.type === 'canvas-frame-url' && typeof event.data.url === 'string') {
+                localStorage.setItem(CANVAS_FRAME_URL_KEY, event.data.url);
+                const frame = document.getElementById('frame-canvas');
+                if(frame) frame.dataset.src = event.data.url;
+                return;
+            }
         });
 
         try {
@@ -1963,6 +1970,9 @@
             applySidebarTooltips();
             restoreSidebarPinned();
             const id = PAGE_IDS.includes(localStorage.getItem(ACTIVE_PAGE_KEY)) ? localStorage.getItem(ACTIVE_PAGE_KEY) : DEFAULT_PAGE_ID;
+            const canvasFrameUrl = localStorage.getItem(CANVAS_FRAME_URL_KEY);
+            const canvasFrame = document.getElementById('frame-canvas');
+            if(canvasFrameUrl && canvasFrame) canvasFrame.dataset.src = canvasFrameUrl;
             restoreLocalNav(id);
             restoreSidebarSettings(id);
             const trigger = document.querySelector(`[onclick*="'${id}'"],[onclick*='"${id}"']`);
