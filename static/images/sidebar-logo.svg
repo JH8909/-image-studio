@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="AI Studio">
+  <defs>
+    <linearGradient id="logoStroke" x1="24" y1="128" x2="232" y2="128" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1e88ff"/>
+      <stop offset="0.48" stop-color="#2f6dff"/>
+      <stop offset="1" stop-color="#8a5cff"/>
+    </linearGradient>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2.4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#softGlow)">
+    <path d="M117 78C96 51 56 49 33 74 4 105 5 158 35 188c24 24 63 23 84-5" stroke="#f8fbff" stroke-width="18"/>
+    <path d="M139 178c21 27 61 29 84 4 29-31 28-84-2-114-24-24-63-23-84 5" stroke="#f8fbff" stroke-width="18"/>
+    <path d="M117 78C96 51 56 49 33 74 4 105 5 158 35 188c24 24 63 23 84-5" stroke="url(#logoStroke)" stroke-width="11"/>
+    <path d="M139 178c21 27 61 29 84 4 29-31 28-84-2-114-24-24-63-23-84 5" stroke="url(#logoStroke)" stroke-width="11"/>
+    <path d="M82 171 174 79c17-17 43 9 26 26l-92 92c-17 17-43-9-26-26Z" stroke="#f8fbff" stroke-width="18"/>
+    <path d="M82 171 174 79c17-17 43 9 26 26l-92 92c-17 17-43-9-26-26Z" stroke="url(#logoStroke)" stroke-width="11"/>
+    <path d="M89 85 60 114M196 142l-31 31" stroke="#f8fbff" stroke-width="18"/>
+    <path d="M89 85 60 114M196 142l-31 31" stroke="url(#logoStroke)" stroke-width="11"/>
+  </g>
+</svg>

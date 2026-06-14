@@ -24,8 +24,8 @@
         })();
     </script>
     <script src="/static/vendor/js/tailwindcss-cdn.js?v=2026.06.11.1781187538"></script>
-    <script src="/static/js/theme.js?v=2026.06.11.1781205633"></script>
-    <script src="/static/js/i18n.js?v=2026.06.11.1781187449"></script>
+    <script src="/static/js/theme.js?v=2026.06.11.1781362421"></script>
+    <script src="/static/js/i18n.js?v=2026.06.11.1781364559"></script>
     <style>
         @import url('/static/vendor/css/fonts.css?v=2026.06.11.1781187486');
 
@@ -204,9 +204,9 @@
             outline: none;
         }
 
-        .logo-ring:hover #logo-dot,
-        .logo-ring:focus-visible #logo-dot {
-            transform: scale(1.45);
+        .logo-ring:hover #sidebar-logo-img,
+        .logo-ring:focus-visible #sidebar-logo-img {
+            transform: scale(1.08);
         }
 
         .logo-ring:active {
@@ -218,8 +218,12 @@
             transform: scale(.94);
         }
 
-        #logo-dot {
-            transition: transform .16s ease, background-color .16s ease, box-shadow .16s ease;
+        #sidebar-logo-img {
+            width: 26px;
+            height: 26px;
+            display: block;
+            object-fit: contain;
+            transition: transform .16s ease;
         }
 
         /* 导航项 */
@@ -314,7 +318,7 @@
         }
 
         .nav-fold-toggle[aria-expanded="false"] .nav-fold-icon {
-            transform: rotate(-90deg);
+            transform: none;
         }
 
         .nav-fold-group {
@@ -675,7 +679,7 @@
             overflow:hidden;
             transition:width 0.3s var(--fluid-ease) 0.5s, background-color .2s, color .2s, border-color .2s;
         }
-        .update-now-btn.show { display:flex; }
+        .update-now-btn.show { display:none !important; }
         .sidebar:hover .update-now-btn { width:170px; transition-delay:0s; }
         .update-now-btn:hover { background:#16a34a; color:#fff; border-color:#16a34a; }
         .update-now-btn[disabled] { opacity:.7; cursor:wait; }
@@ -694,7 +698,7 @@
         .sidebar:hover .update-version-full { display:inline; }
         .sidebar:hover .update-action-prefix { display:inline; }
         .sidebar:hover .update-now-text { max-width:130px; transition-delay:.15s; }
-        .update-now-btn.show + .project-version-badge { display:none; }
+        .update-now-btn.show + .project-version-badge { display:flex !important; }
         html.theme-dark .update-now-btn,
         body.theme-dark .update-now-btn {
             border-color:rgba(134,239,172,.42);
@@ -1236,10 +1240,8 @@
             border-color: var(--text);
             box-shadow: 0 0 0 3px rgba(148, 163, 184, .12);
         }
-        .sidebar.is-pinned #logo-dot {
-            background: var(--text) !important;
-            transform: scale(1.25);
-            box-shadow: 0 0 0 3px rgba(148, 163, 184, .16);
+        .sidebar.is-pinned #sidebar-logo-img {
+            transform: scale(1.04);
         }
         .sidebar.is-pinned .logo-ring:hover,
         .sidebar.is-pinned .logo-ring:focus-visible {
@@ -1342,11 +1344,112 @@
             overflow: visible;
         }
 
+        .sidebar .nav-item,
+        .sidebar .nav-fold-toggle {
+            width: 36px;
+            height: 34px;
+            flex-basis: 34px;
+            margin: 3px 0;
+            padding-left: 10px;
+            border: 0 !important;
+            border-radius: 0;
+            background: transparent !important;
+            box-shadow: none !important;
+            outline: none;
+            transition: transform .16s ease, color .16s ease;
+        }
+
+        .sidebar .nav-item > svg,
+        .sidebar .nav-fold-icon {
+            width: 16px;
+            height: 16px;
+            stroke-width: 1.8;
+        }
+
+        .sidebar .nav-item > svg * {
+            stroke-width: 1.8;
+        }
+
+        .sidebar .side-pill {
+            width: 36px;
+            height: 30px;
+            border: 0 !important;
+            border-radius: 0;
+            background: transparent !important;
+            box-shadow: none !important;
+            outline: none;
+            transition: transform .16s ease, color .16s ease;
+        }
+
+        .sidebar .side-pill svg {
+            width: 14px;
+            height: 14px;
+            stroke-width: 1.8;
+        }
+
+        .sidebar .side-actions {
+            gap: 4px;
+            margin-top: 8px;
+            margin-bottom: 8px;
+        }
+
+        .sidebar .logo-ring {
+            width: 34px;
+            height: 34px;
+            border: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            outline: none;
+        }
+
+        .sidebar #sidebar-logo-img {
+            width: 30px;
+            height: 30px;
+        }
+
+        .sidebar .logo-ring:hover,
+        .sidebar .logo-ring:focus-visible,
+        .sidebar.is-pinned .logo-ring,
+        .sidebar.is-pinned .logo-ring:hover,
+        .sidebar.is-pinned .logo-ring:focus-visible {
+            border: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            outline: none;
+            transform: scale(1.18);
+        }
+
+        .sidebar .nav-item:hover,
+        .sidebar .nav-item.active,
+        .sidebar .nav-fold-toggle:hover,
+        .sidebar .nav-fold-toggle:focus-visible,
+        .sidebar .side-pill:hover,
+        .sidebar .side-pill:focus-visible,
+        .sidebar .side-pill.active {
+            background: transparent !important;
+            border-color: transparent !important;
+            box-shadow: none !important;
+            outline: none;
+            color: var(--text);
+            transform: scale(1.22);
+        }
+
+        .sidebar .nav-item.active {
+            color: var(--accent);
+        }
+
+        html.theme-dark .sidebar .nav-item.active,
+        body.theme-dark .sidebar .nav-item.active {
+            background: transparent !important;
+            box-shadow: none !important;
+            color: #f8fafc;
+        }
+
         .sidebar:hover .nav-item,
         .sidebar.is-pinned .nav-item,
         .sidebar:hover .nav-fold-toggle,
         .sidebar.is-pinned .nav-fold-toggle {
-            width: 48px;
+            width: 36px;
         }
 
         .sidebar:hover .nav-text,
@@ -1362,7 +1465,7 @@
 
         .sidebar:hover .side-pill,
         .sidebar.is-pinned .side-pill {
-            width: 44px;
+            width: 36px;
             gap: 0;
         }
 
@@ -1373,11 +1476,72 @@
             width: 44px;
         }
 
+        .sidebar .project-version-badge,
+        .sidebar:hover .project-version-badge,
+        .sidebar.is-pinned .project-version-badge,
+        .sidebar .update-now-btn,
+        .sidebar:hover .update-now-btn,
+        .sidebar.is-pinned .update-now-btn {
+            border: 0 !important;
+            border-radius: 0;
+            background: transparent !important;
+            box-shadow: none !important;
+            font-size: 10px;
+        }
+
+        .sidebar .project-version-badge:hover,
+        .sidebar .update-now-btn:hover {
+            border: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+        }
+
+        .sidebar .project-version-badge,
+        .sidebar .project-version-badge:hover,
+        .sidebar .project-version-badge:focus,
+        .sidebar .project-version-badge:focus-visible,
+        .sidebar .project-version-badge:active,
+        .sidebar .project-version-badge.checking,
+        .sidebar .project-version-badge.checking:hover,
+        .sidebar .project-version-badge.studio-glow-button,
+        .sidebar .project-version-badge.studio-glow-button:hover,
+        .sidebar .project-version-badge.studio-glow-button:focus,
+        .sidebar .project-version-badge.studio-glow-button:focus-visible,
+        .sidebar .project-version-badge.studio-glow-button:active {
+            --studio-glow-edge: 0 !important;
+            --studio-glow-ring: rgba(216, 222, 233, 0) !important;
+            --studio-glow-fill: rgba(216, 222, 233, 0) !important;
+            --studio-glow-shadow: rgba(216, 222, 233, 0) !important;
+            background-image: none !important;
+            background-blend-mode: normal;
+            background-color: transparent !important;
+            border-color: transparent !important;
+            box-shadow: none !important;
+            color: #22c55e !important;
+            opacity: 1 !important;
+            animation: none !important;
+            outline: none !important;
+            transform: none !important;
+            transition: none !important;
+        }
+
         .sidebar:hover .project-version-compact,
         .sidebar.is-pinned .project-version-compact,
         .sidebar:hover .update-version-compact,
         .sidebar.is-pinned .update-version-compact {
             display: inline;
+        }
+
+        .sidebar .project-version-compact,
+        .sidebar:hover .project-version-compact,
+        .sidebar.is-pinned .project-version-compact {
+            display: inline !important;
+        }
+
+        .sidebar .project-version-full,
+        .sidebar:hover .project-version-full,
+        .sidebar.is-pinned .project-version-full {
+            display: none !important;
         }
 
         .sidebar:hover .project-version-full,
@@ -1406,25 +1570,28 @@
             position: static;
             width: 60px;
             min-height: auto;
-            padding: 6px 5px;
+            padding: 4px 0;
             margin-top: 8px;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 4px;
-            border-radius: 14px;
-            box-shadow: none;
+            border: 0 !important;
+            border-radius: 0;
+            background: transparent !important;
+            box-shadow: none !important;
+            backdrop-filter: none;
         }
 
         .nano-monitor .stat-group {
             gap: 3px;
-            font-size: 8px;
+            font-size: 10px;
             line-height: 1;
         }
 
         .nano-monitor .label-nano {
             display: inline;
-            font-size: 7px;
+            font-size: 10px;
             letter-spacing: .04em;
         }
 
@@ -1447,23 +1614,23 @@
         .sidebar .nav-item[data-title]::after,
         .sidebar .nav-fold-toggle[data-title]::after,
         .sidebar .side-pill[data-title]::after {
-            content: attr(data-title) "\A" attr(data-desc);
+            content: attr(data-title);
             position: absolute;
             left: calc(100% + 16px);
             top: 50%;
             z-index: 120;
             width: max-content;
             max-width: 220px;
-            padding: 10px 12px;
-            border: 1px solid rgba(148, 163, 184, .28);
-            border-radius: 12px;
-            background: rgba(15, 23, 42, .96);
+            padding: 0;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
             color: #f8fafc;
-            box-shadow: 0 18px 42px rgba(0,0,0,.28);
+            box-shadow: none;
             font-size: 12px;
             font-weight: 800;
-            line-height: 1.45;
-            white-space: pre;
+            line-height: 1.2;
+            white-space: nowrap;
             opacity: 0;
             pointer-events: none;
             transform: translateY(-50%) translateX(-4px);
@@ -1480,10 +1647,10 @@
             z-index: 121;
             width: 10px;
             height: 10px;
-            border-left: 1px solid rgba(148, 163, 184, .28);
-            border-bottom: 1px solid rgba(148, 163, 184, .28);
-            background: rgba(15, 23, 42, .96);
+            border: 0;
+            background: transparent;
             opacity: 0;
+            display: none;
             pointer-events: none;
             transform: translateY(-50%) rotate(45deg);
             transition: opacity .14s ease;
@@ -1515,13 +1682,15 @@
     <div class="app-shell">
         <aside class="sidebar" id="studioSidebar">
             <button class="logo-ring" id="sidebarLogoToggle" type="button" onclick="toggleSidebarPinned(event)" aria-pressed="false" title="固定导航栏">
-                <div class="w-1.5 h-1.5 rounded-full transition-colors" id="logo-dot" style="background:var(--text)"></div>
+                <img id="sidebar-logo-img" src="/static/images/sidebar-logo.svg" alt="AI Studio">
             </button>
 
             <nav>
                 <button class="nav-fold-toggle" id="local-nav-toggle" type="button" onclick="toggleLocalNav()" aria-expanded="true" title="折叠本地功能" data-title="本地功能" data-desc="展开本地创作工具">
                     <svg class="nav-fold-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <polyline points="6 9 12 15 18 9"></polyline>
+                        <line x1="5" y1="7" x2="19" y2="7"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <line x1="5" y1="17" x2="19" y2="17"></line>
                     </svg>
                     <span class="nav-text" data-i18n="nav.localTools">本地功能</span>
                 </button>
@@ -1642,20 +1811,7 @@
                         </svg>
                         <span id="update-now-text" class="update-now-text" data-i18n="update.oneClick">一键更新</span>
                     </button>
-                    <div id="project-version-badge" class="project-version-badge" title="点击检测更新" role="button" tabindex="0" onclick="checkForUpdates(true)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();checkForUpdates(true);}">v-</div>
-                </div>
-                <div class="nano-monitor" id="nano-monitor">
-                    <div class="stat-group">
-                        <div class="pulse-dot animate-pulse"></div>
-                        <div class="spinner-nano"></div>
-                        <span class="label-nano">ONLINE</span>
-                        <span id="online-val">1</span>
-                    </div>
-                    <div class="divider"></div>
-                    <div class="stat-group">
-                        <span class="label-nano">QUEUE</span>
-                        <span id="queue-val">0</span>
-                    </div>
+                    <div id="project-version-badge" class="project-version-badge studio-glow-ignore" onclick="checkForUpdates(true)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();checkForUpdates(true);}" tabindex="0">v-</div>
                 </div>
             </div>
 
@@ -1679,14 +1835,14 @@
         </script>
 
         <main class="stage">
-            <iframe id="frame-zimage" data-src="/static/zimage.html?v=2026.06.11.1781207072" class="active" scrolling="yes"></iframe>
-            <iframe id="frame-enhance" data-src="/static/enhance.html?v=2026.06.11.1781207072" scrolling="yes"></iframe>
-            <iframe id="frame-klein" data-src="/static/klein.html?v=2026.06.11.1781207072" scrolling="yes"></iframe>
-            <iframe id="frame-angle" data-src="/static/angle.html?v=2026.06.11.1781207072" scrolling="yes"></iframe>
-            <iframe id="frame-gpt-chat" data-src="/static/gpt-chat.html?v=2026.06.11.1781207072" scrolling="yes"></iframe>
-            <iframe id="frame-canvas" data-src="/static/canvas.html?v=2026.06.11.1781207072" scrolling="yes"></iframe>
-            <iframe id="frame-asset-manager" data-src="/static/asset-manager.html?v=2026.06.11.1781207072" scrolling="yes"></iframe>
-            <iframe id="frame-api-settings" data-src="/static/api-settings.html?v=2026.06.11.1781207072" scrolling="yes"></iframe>
+            <iframe id="frame-zimage" data-src="/static/zimage.html?v=2026.06.11.1781398517" class="active" scrolling="yes"></iframe>
+            <iframe id="frame-enhance" data-src="/static/enhance.html?v=2026.06.11.1781398517" scrolling="yes"></iframe>
+            <iframe id="frame-klein" data-src="/static/klein.html?v=2026.06.11.1781398517" scrolling="yes"></iframe>
+            <iframe id="frame-angle" data-src="/static/angle.html?v=2026.06.11.1781398517" scrolling="yes"></iframe>
+            <iframe id="frame-gpt-chat" data-src="/static/gpt-chat.html?v=2026.06.11.1781398517" scrolling="yes"></iframe>
+            <iframe id="frame-canvas" data-src="/static/canvas.html?v=2026.06.11.1781398517" scrolling="yes"></iframe>
+            <iframe id="frame-asset-manager" data-src="/static/asset-manager.html?v=2026.06.11.1781398517" scrolling="yes"></iframe>
+            <iframe id="frame-api-settings" data-src="/static/api-settings.html?v=2026.06.11.1781398517" scrolling="yes"></iframe>
         </main>
     </div>
 
@@ -1987,17 +2143,14 @@
                 const data = await res.json();
                 const monitor = document.getElementById('nano-monitor');
                 const queueVal = document.getElementById('queue-val');
-                const logoDot = document.getElementById('logo-dot');
                 const total = data.total || 0;
                 const pos = data.position || 0;
                 if (pos > 0) {
-                    monitor.classList.add('is-busy');
-                    queueVal.innerText = `${pos}/${total}`;
-                    logoDot.style.backgroundColor = '#3b82f6';
+                    monitor?.classList.add('is-busy');
+                    if(queueVal) queueVal.innerText = `${pos}/${total}`;
                 } else {
-                    monitor.classList.remove('is-busy');
-                    queueVal.innerText = total > 0 ? total : '0';
-                    logoDot.style.backgroundColor = 'var(--text)';
+                    monitor?.classList.remove('is-busy');
+                    if(queueVal) queueVal.innerText = total > 0 ? total : '0';
                 }
             } catch (e) { }
         }
@@ -2009,7 +2162,8 @@
             ws.onmessage = (event) => {
                 const data = JSON.parse(event.data);
                 if (data.type === 'stats') {
-                    document.getElementById('online-val').innerText = data.online_count;
+                    const onlineVal = document.getElementById('online-val');
+                    if(onlineVal) onlineVal.innerText = data.online_count;
                 } else if (data.type === 'cloud_status') {
                     const iframe = document.querySelector('iframe.active');
                     if (iframe && iframe.contentWindow) {
@@ -2159,9 +2313,7 @@
             } else {
                 badge.textContent = 'v-';
             }
-            badge.title = window.StudioI18n?.lang?.() === 'en'
-                ? `Current version: ${full} · click to check for updates`
-                : `当前版本：${full} · 点击检测更新`;
+            badge.removeAttribute('title');
         }
 
         function refreshUpdateButtonText() {

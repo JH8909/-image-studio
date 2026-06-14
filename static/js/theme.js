@@ -156,7 +156,6 @@
         '[role="button"]',
         '.nav-item',
         '.side-pill',
-        '.project-version-badge',
         '.action-btn',
         '.primary-btn',
         '.ghost-btn',
@@ -223,12 +222,17 @@
             el &&
             el instanceof HTMLElement &&
             el.matches(GLOW_SELECTOR) &&
+            el.id !== 'project-version-badge' &&
             !el.closest('[data-studio-glow="off"]') &&
             !el.classList.contains('studio-glow-ignore')
         );
     }
 
     function applyButtonGlow(root = document){
+        root.querySelectorAll?.('#project-version-badge.studio-glow-button').forEach(el => {
+            el.classList.remove('studio-glow-button');
+            el.removeAttribute('style');
+        });
         root.querySelectorAll?.(GLOW_SELECTOR).forEach(el => {
             if(shouldGlow(el)) el.classList.add('studio-glow-button');
         });

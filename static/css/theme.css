@@ -89,11 +89,6 @@ body.studio-theme-dark .logo-ring {
     border-color: #d8dee9 !important;
 }
 
-html.studio-theme-dark body #logo-dot,
-body.studio-theme-dark #logo-dot {
-    background: #d8dee9 !important;
-}
-
 html.studio-theme-dark body .nano-monitor,
 body.studio-theme-dark .nano-monitor {
     background: rgba(17,18,22,.88) !important;
